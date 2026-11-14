@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Dark utilities follow the chosen theme, not only the system setting. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme]), :root:not([data-theme]) *) {
+      @slot;
+    }
   }
 }
 
+/*
+ * The look: a tutor's exercise book. Cream paper with blue rules and a red
+ * margin by day; a quiet ink-blue desk at night.
+ */
+:root,
+[data-theme="light"] {
+  --paper: #f6f1e6;
+  --surface: #fffdf7;
+  --ink: #1c2333;
+  --muted: #5d6677;
+  --rule: #dfe6f1;
+  --border: #e2dac8;
+  --margin: #e0675c;
+  --accent: #1f4fd1;
+  --accent-hover: #183fa8;
+  --on-accent: #ffffff;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --success: #1d6b3a;
+  --success-soft: #e3f4e8;
+  --shadow: 0 1px 2px rgb(28 35 51 / 0.06), 0 8px 24px rgb(28 35 51 / 0.08);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --paper: #0e1320;
+  --surface: #151c2c;
+  --ink: #ebe6d9;
+  --muted: #9aa3b6;
+  --rule: #1f2940;
+  --border: #263150;
+  --margin: #e57b70;
+  --accent: #8fb0ff;
+  --accent-hover: #b3caff;
+  --on-accent: #0e1320;
+  --danger: #ff9b8f;
+  --danger-soft: #3a1c1c;
+  --success: #7fd69b;
+  --success-soft: #16301f;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+  color-scheme: dark;
+}
+
+/* No choice saved yet: follow the phone or laptop setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --paper: #0e1320;
+    --surface: #151c2c;
+    --ink: #ebe6d9;
+    --muted: #9aa3b6;
+    --rule: #1f2940;
+    --border: #263150;
+    --margin: #e57b70;
+    --accent: #8fb0ff;
+    --accent-hover: #b3caff;
+    --on-accent: #0e1320;
+    --danger: #ff9b8f;
+    --danger-soft: #3a1c1c;
+    --success: #7fd69b;
+    --success-soft: #16301f;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-border: var(--border);
+  --color-margin: var(--margin);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --shadow-page: var(--shadow);
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-fraunces);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* A sheet of ruled exercise-book paper with a red margin line. */
+.ruled {
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(
+      to right,
+      transparent 2.25rem,
+      var(--margin) 2.25rem,
+      var(--margin) calc(2.25rem + 1px),
+      transparent calc(2.25rem + 1px)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(2rem - 1px),
+      var(--rule) calc(2rem - 1px),
+      var(--rule) 2rem
+    );
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
