@@ -1,8 +1,17 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
+import { NoteActions } from "@/components/note-actions";
 import { createClient } from "@/lib/supabase/server";
-import { NOTE_COLUMNS, formatNoteDate, type Note } from "@/lib/notes";
+import {
+  NOTE_COLUMNS,
+  STICKY_BUTTON,
+  formatNoteDate,
+  notePreview,
+  noteTint,
+  type Note,
+} from "@/lib/notes";
 import { NewNoteForm } from "./new-note-form";
 
 export default function HomePage() {
@@ -87,7 +96,7 @@ async function NotesList() {
         </p>
       </div>
 
-      <ol className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ol className="mt-6 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {notes.map((note) => (
           <li key={note.id} className="min-w-0">
             <NoteCard note={note} />
@@ -98,17 +107,19 @@ async function NotesList() {
   );
 }
 
-const NOTE_TINTS = 6;
-
 function NoteCard({ note }: { note: Note }) {
   const edited = note.updated_at !== note.created_at;
+  const preview = notePreview(note.body);
+  const href = `/notes/${note.id}`;
   return (
     <article
-      className={`note-card note-tint-${note.id % NOTE_TINTS} flex h-full flex-col rounded-2xl border border-t-4 border-border p-5 shadow-page`}
+      className={`dims-on-delete note-card ${noteTint(note.id)} flex h-full flex-col rounded-sm p-5 pt-6`}
     >
       <header className="grid gap-1">
         <h3 className="font-serif text-lg font-semibold break-words">
-          {note.title}
+          <Link href={href} className="hover:underline underline-offset-4">
+            {note.title}
+          </Link>
         </h3>
         <p className="text-xs opacity-75">
           <time dateTime={note.created_at}>
@@ -117,11 +128,29 @@ function NoteCard({ note }: { note: Note }) {
           {edited && " · edited"}
         </p>
       </header>
-      {note.body && (
-        <p className="mt-3 leading-relaxed break-words whitespace-pre-wrap">
-          {note.body}
+      {preview.text && (
+        <p className="mt-3 line-clamp-4 leading-relaxed break-words whitespace-pre-wrap">
+          {preview.text}
         </p>
       )}
+      {preview.cut && (
+        <Link
+          href={href}
+          aria-label={`Read all of "${note.title}"`}
+          className="mt-2 self-start text-sm font-semibold underline underline-offset-4 hover:no-underline"
+        >
+          Read more
+        </Link>
+      )}
+      <footer className="mt-auto pt-5">
+        <NoteActions
+          id={note.id}
+          title={note.title}
+          viewHref={href}
+          editHref={`${href}?edit=1`}
+          buttonClass={STICKY_BUTTON}
+        />
+      </footer>
     </article>
   );
 }

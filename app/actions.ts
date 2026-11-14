@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { BODY_MAX, TITLE_MAX } from "@/lib/notes";
+import { BODY_MAX, TITLE_MAX, parseNoteId } from "@/lib/notes";
 
 export type NoteFormState = {
   error?: string;
@@ -54,4 +54,59 @@ export async function createNote(
 
   revalidatePath("/");
   return { savedAt: Date.now() };
+}
+
+export async function updateNote(
+  _prev: NoteFormState,
+  formData: FormData,
+): Promise<NoteFormState> {
+  const id = parseNoteId(formData.get("id"));
+  if (!id) return { error: "This note can't be found." };
+
+  const note = readNote(formData);
+  const problem = checkNote(note);
+  if (problem) return { error: problem, ...note };
+
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims?.sub) redirect("/login");
+
+  // Row-level security only lets a tutor update their own notes. For anyone
+  // else's id, nothing matches, so no row comes back.
+  const { data, error } = await supabase
+    .from("notes")
+    .update({
+      title: note.title,
+      body: note.body,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select("id");
+
+  if (error) {
+    return { error: "Your changes weren't saved. Please try again.", ...note };
+  }
+  if (!data.length) {
+    return { error: "This note can't be found. It may have been deleted." };
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/notes/${id}`);
+  redirect("/");
+}
+
+export async function deleteNote(formData: FormData) {
+  const id = parseNoteId(formData.get("id"));
+  if (!id) redirect("/");
+
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims?.sub) redirect("/login");
+
+  // Row-level security only lets a tutor delete their own notes.
+  await supabase.from("notes").delete().eq("id", id);
+
+  revalidatePath("/");
+  revalidatePath(`/notes/${id}`);
+  redirect("/");
 }
