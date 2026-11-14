@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Brand } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LoginForm } from "./login-form";
+import { ConfirmNotice } from "./confirm-notice";
 
 export const metadata: Metadata = {
   title: "Log in · Inkwell",
@@ -43,7 +45,13 @@ export default function LoginPage() {
         </section>
 
         <section className="order-1 lg:order-2">
-          <LoginForm />
+          <LoginForm
+            notice={
+              <Suspense fallback={null}>
+                <ConfirmNotice />
+              </Suspense>
+            }
+          />
         </section>
       </main>
     </div>

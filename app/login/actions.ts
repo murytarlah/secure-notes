@@ -1,13 +1,15 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = {
   error?: string;
-  success?: string;
   email?: string;
+  /** Sign-up worked and a confirmation link was emailed to `email`. */
+  checkEmail?: boolean;
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,6 +46,13 @@ export async function logIn(
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error?.code === "email_not_confirmed") {
+    // Only reachable with the right password, so it reveals nothing new.
+    return {
+      error: "Confirm your email first: open the link we sent you, then log in.",
+      email,
+    };
+  }
   if (error) return wrong;
 
   revalidatePath("/", "layout");
@@ -73,33 +82,74 @@ export async function signUp(
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  // The link in the confirmation email brings the tutor back to this site.
+  const origin = (await headers()).get("origin");
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: origin ? { emailRedirectTo: `${origin}/auth/confirm` } : undefined,
+  });
 
   if (error) {
     if (error.code === "user_already_exists") {
       return { error: "That email already has an account. Log in instead.", email };
+    }
+    if (error.code === "over_email_send_rate_limit") {
+      return explainEmailLimit(supabase, email, password);
     }
     if (error.code === "weak_password") {
       return { error: "Choose a stronger password.", email };
     }
     return { error: "We couldn't create your account. Try again.", email };
   }
-  // With "Confirm email" off, sign-up logs the tutor straight in (below).
-  // With it on, there is no session yet and the tutor must confirm by email.
+  // With "Confirm email" on (Supabase → Authentication → Sign In / Providers),
+  // there is no session yet: the tutor confirms by email, then logs in.
   if (!data.session) {
-    // When Confirm email is on, Supabase hides "already registered" by
-    // returning a user with no identities instead of an error.
+    // Supabase hides "already registered" here by returning a user with no
+    // identities instead of an error.
     if (data.user && data.user.identities?.length === 0) {
       return { error: "That email already has an account. Log in instead.", email };
     }
+    return { checkEmail: true, email };
+  }
+
+  // Confirm email is off: Supabase logged the tutor straight in.
+  revalidatePath("/", "layout");
+  redirect("/");
+}
+
+/**
+ * Supabase couldn't send another email (its hourly limit). Usually this means
+ * the tutor signed up before and is trying again. Logging in with the same
+ * email and password tells us which case it is, without sending an email.
+ */
+async function explainEmailLimit(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+  password: string,
+): Promise<AuthState> {
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  // The account exists, the password is right, the email is already confirmed:
+  // just let them in.
+  if (!error) {
+    revalidatePath("/", "layout");
+    redirect("/");
+  }
+
+  // The account exists but the email hasn't been confirmed yet.
+  if (error.code === "email_not_confirmed") {
     return {
-      success: `Account created. We've sent a link to ${email}: open it to confirm your email, then log in.`,
+      error: `There's already an account for ${email}, but the email isn't verified yet. Check your inbox (and spam) for the link we sent earlier, click it, then log in.`,
       email,
     };
   }
 
-  revalidatePath("/", "layout");
-  redirect("/");
+  // We can't tell (no account, or a different password): don't guess.
+  return {
+    error: "We can't send a confirmation email right now. If you already signed up, check your inbox for our link. Otherwise, try again in a few minutes.",
+    email,
+  };
 }
 
 export async function logOut() {

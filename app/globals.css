@@ -126,3 +126,65 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/*
+ * Note colours: six vivid papers, like a wall of sticky notes.
+ * Light theme: bright pastels with dark ink. Dark theme: rich jewel tones
+ * with light ink. Each note keeps its colour (chosen from its id).
+ */
+.note-tint-0 { --tint-bg: #ffe066; --tint-edge: #f5b700; } /* sunflower */
+.note-tint-1 { --tint-bg: #8eecc0; --tint-edge: #12b76a; } /* mint */
+.note-tint-2 { --tint-bg: #93d2ff; --tint-edge: #1e88e5; } /* sky */
+.note-tint-3 { --tint-bg: #ffa8c0; --tint-edge: #e83e6c; } /* rose */
+.note-tint-4 { --tint-bg: #c9b0ff; --tint-edge: #7c4dff; } /* violet */
+.note-tint-5 { --tint-bg: #ffbe8f; --tint-edge: #f2711c; } /* tangerine */
+
+.note-card {
+  --tint-ink: #1c1a14;
+  background-color: var(--tint-bg);
+  border-color: transparent;
+  border-top-color: var(--tint-edge);
+  color: var(--tint-ink);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+[data-theme="dark"] .note-card { --tint-ink: #fbf8f1; }
+[data-theme="dark"] .note-tint-0 { --tint-bg: #8a6500; --tint-edge: #ffd23f; }
+[data-theme="dark"] .note-tint-1 { --tint-bg: #0b6e4f; --tint-edge: #4ff0a8; }
+[data-theme="dark"] .note-tint-2 { --tint-bg: #1453a8; --tint-edge: #6cc4ff; }
+[data-theme="dark"] .note-tint-3 { --tint-bg: #a3214f; --tint-edge: #ff8fb1; }
+[data-theme="dark"] .note-tint-4 { --tint-bg: #5b2fc0; --tint-edge: #c4a6ff; }
+[data-theme="dark"] .note-tint-5 { --tint-bg: #a4440f; --tint-edge: #ffad73; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .note-card { --tint-ink: #fbf8f1; }
+  :root:not([data-theme]) .note-tint-0 { --tint-bg: #8a6500; --tint-edge: #ffd23f; }
+  :root:not([data-theme]) .note-tint-1 { --tint-bg: #0b6e4f; --tint-edge: #4ff0a8; }
+  :root:not([data-theme]) .note-tint-2 { --tint-bg: #1453a8; --tint-edge: #6cc4ff; }
+  :root:not([data-theme]) .note-tint-3 { --tint-bg: #a3214f; --tint-edge: #ff8fb1; }
+  :root:not([data-theme]) .note-tint-4 { --tint-bg: #5b2fc0; --tint-edge: #c4a6ff; }
+  :root:not([data-theme]) .note-tint-5 { --tint-bg: #a4440f; --tint-edge: #ffad73; }
+}
+
+/* The six note colours in one strip, used as a bright edge on the page. */
+.tint-strip {
+  background: linear-gradient(
+    to right,
+    #f5b700 0 16.66%,
+    #12b76a 16.66% 33.33%,
+    #1e88e5 33.33% 50%,
+    #e83e6c 50% 66.66%,
+    #7c4dff 66.66% 83.33%,
+    #f2711c 83.33% 100%
+  );
+}
+
+/* A slight, alternating tilt, as if the cards were pinned up by hand. */
+li:nth-child(odd) > .note-card { transform: rotate(-0.6deg); }
+li:nth-child(even) > .note-card { transform: rotate(0.6deg); }
+li > .note-card:hover { transform: rotate(0) translateY(-3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  li > .note-card,
+  li > .note-card:hover { transform: none; transition: none; }
+}
