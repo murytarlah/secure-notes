@@ -7,7 +7,6 @@ import { logOut } from "@/app/login/actions";
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-paper/90 backdrop-blur">
-      <div aria-hidden className="tint-strip h-1" />
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <Link href="/" aria-label="Inkwell, my notes" className="rounded-xl">
           <Brand />

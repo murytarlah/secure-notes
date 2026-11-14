@@ -128,54 +128,74 @@ body {
 }
 
 /*
- * Note colours: six vivid papers, like a wall of sticky notes.
- * Light theme: bright pastels with dark ink. Dark theme: rich jewel tones
- * with light ink. Each note keeps its colour (chosen from its id).
+ * Note colours: classic sticky notes. Canary yellow, pink, blue, green,
+ * orange and lilac, always with dark ink, like real paper notes. In the dark
+ * theme they are dimmed a little so they glow without glaring.
+ * Each note keeps its colour (chosen from its id).
  */
-.note-tint-0 { --tint-bg: #ffe066; --tint-edge: #f5b700; } /* sunflower */
-.note-tint-1 { --tint-bg: #8eecc0; --tint-edge: #12b76a; } /* mint */
-.note-tint-2 { --tint-bg: #93d2ff; --tint-edge: #1e88e5; } /* sky */
-.note-tint-3 { --tint-bg: #ffa8c0; --tint-edge: #e83e6c; } /* rose */
-.note-tint-4 { --tint-bg: #c9b0ff; --tint-edge: #7c4dff; } /* violet */
-.note-tint-5 { --tint-bg: #ffbe8f; --tint-edge: #f2711c; } /* tangerine */
+.note-tint-0 { --tint-bg: #fff475; --tint-edge: #f2d600; } /* canary yellow */
+.note-tint-1 { --tint-bg: #ffb7d5; --tint-edge: #ff69a8; } /* pink */
+.note-tint-2 { --tint-bg: #a8e1ff; --tint-edge: #3db4f2; } /* blue */
+.note-tint-3 { --tint-bg: #c3f5a6; --tint-edge: #6cd43c; } /* green */
+.note-tint-4 { --tint-bg: #ffd08a; --tint-edge: #ff9f1c; } /* orange */
+.note-tint-5 { --tint-bg: #dcc6ff; --tint-edge: #a77bff; } /* lilac */
 
 .note-card {
-  --tint-ink: #1c1a14;
+  position: relative;
   background-color: var(--tint-bg);
+  /* A faint fold at the bottom, like a real sticky note curling up. */
+  background-image: linear-gradient(
+    to bottom,
+    transparent 70%,
+    rgb(0 0 0 / 0.05) 100%
+  );
   border-color: transparent;
-  border-top-color: var(--tint-edge);
-  color: var(--tint-ink);
+  color: #1f1d16;
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.08),
+    0 10px 20px -8px rgb(0 0 0 / 0.35);
   transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
-[data-theme="dark"] .note-card { --tint-ink: #fbf8f1; }
-[data-theme="dark"] .note-tint-0 { --tint-bg: #8a6500; --tint-edge: #ffd23f; }
-[data-theme="dark"] .note-tint-1 { --tint-bg: #0b6e4f; --tint-edge: #4ff0a8; }
-[data-theme="dark"] .note-tint-2 { --tint-bg: #1453a8; --tint-edge: #6cc4ff; }
-[data-theme="dark"] .note-tint-3 { --tint-bg: #a3214f; --tint-edge: #ff8fb1; }
-[data-theme="dark"] .note-tint-4 { --tint-bg: #5b2fc0; --tint-edge: #c4a6ff; }
-[data-theme="dark"] .note-tint-5 { --tint-bg: #a4440f; --tint-edge: #ffad73; }
+/* A strip of tape holding each note up. */
+.note-card::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 72px;
+  height: 20px;
+  transform: translateX(-50%) rotate(-2deg);
+  background: rgb(255 255 255 / 0.55);
+  border: 1px solid rgb(0 0 0 / 0.06);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
 
+[data-theme="dark"] .note-card {
+  filter: brightness(0.9) saturate(1.05);
+}
+[data-theme="dark"] .note-card::before {
+  background: rgb(255 255 255 / 0.25);
+}
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .note-card { --tint-ink: #fbf8f1; }
-  :root:not([data-theme]) .note-tint-0 { --tint-bg: #8a6500; --tint-edge: #ffd23f; }
-  :root:not([data-theme]) .note-tint-1 { --tint-bg: #0b6e4f; --tint-edge: #4ff0a8; }
-  :root:not([data-theme]) .note-tint-2 { --tint-bg: #1453a8; --tint-edge: #6cc4ff; }
-  :root:not([data-theme]) .note-tint-3 { --tint-bg: #a3214f; --tint-edge: #ff8fb1; }
-  :root:not([data-theme]) .note-tint-4 { --tint-bg: #5b2fc0; --tint-edge: #c4a6ff; }
-  :root:not([data-theme]) .note-tint-5 { --tint-bg: #a4440f; --tint-edge: #ffad73; }
+  :root:not([data-theme]) .note-card {
+    filter: brightness(0.9) saturate(1.05);
+  }
+  :root:not([data-theme]) .note-card::before {
+    background: rgb(255 255 255 / 0.25);
+  }
 }
 
 /* The six note colours in one strip, used as a bright edge on the page. */
 .tint-strip {
   background: linear-gradient(
     to right,
-    #f5b700 0 16.66%,
-    #12b76a 16.66% 33.33%,
-    #1e88e5 33.33% 50%,
-    #e83e6c 50% 66.66%,
-    #7c4dff 66.66% 83.33%,
-    #f2711c 83.33% 100%
+    #f2d600 0 16.66%,
+    #ff69a8 16.66% 33.33%,
+    #3db4f2 33.33% 50%,
+    #6cd43c 50% 66.66%,
+    #ff9f1c 66.66% 83.33%,
+    #a77bff 83.33% 100%
   );
 }
 
@@ -187,4 +207,27 @@ li > .note-card:hover { transform: rotate(0) translateY(-3px); }
 @media (prefers-reduced-motion: reduce) {
   li > .note-card,
   li > .note-card:hover { transform: none; transition: none; }
+}
+
+/* The inline "Delete this note?" question pops in gently. */
+@keyframes confirm-pop {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.confirm-pop { animation: confirm-pop 160ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .confirm-pop { animation: none; }
+}
+
+/* While a note is being deleted: fade it, stop clicks, and pulse gently. */
+.dims-on-delete:has([data-deleting]) {
+  opacity: 0.55;
+  pointer-events: none;
+  animation: deleting-pulse 1.2s ease-in-out infinite;
+}
+@keyframes deleting-pulse {
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dims-on-delete:has([data-deleting]) { animation: none; }
 }
